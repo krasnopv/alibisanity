@@ -8,8 +8,10 @@
     "dev": "sanity dev",
     "start": "sanity start",
     "build": "sanity build",
+    "build:gh-pages": "sanity build --no-minify && cp .nojekyll dist/ && cp public/404.html dist/",
     "deploy": "sanity deploy",
-    "deploy-graphql": "sanity graphql deploy"
+    "deploy-graphql": "sanity graphql deploy",
+    "seed": "node scripts/seed-data.js"
   },
   "keywords": [
     "sanity"
