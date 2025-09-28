@@ -1,0 +1,2 @@
+# This file tells GitHub Pages to not process the site with Jekyll
+# This is needed for SPAs and other non-Jekyll sites
