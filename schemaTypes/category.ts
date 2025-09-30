@@ -31,6 +31,45 @@ export default defineType({
       title: 'Color',
       type: 'string',
       description: 'Hex color code for the category (e.g., #FF0066)'
+    }),
+    defineField({
+      name: 'order',
+      title: 'Display Order',
+      type: 'number',
+      description: 'Lower numbers appear first'
+    }),
+    defineField({
+      name: 'films',
+      title: 'Films in this Category',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'film'}]
+        }
+      ],
+      description: 'Films that belong to this category (automatically populated)'
     })
-  ]
+  ],
+  orderings: [
+    {
+      title: 'Display Order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }]
+    }
+  ],
+  preview: {
+    select: {
+      title: 'name',
+      subtitle: 'description',
+      filmsCount: 'films.length'
+    },
+    prepare(selection) {
+      const {title, subtitle, filmsCount} = selection
+      return {
+        title: title,
+        subtitle: `${subtitle || 'No description'} • ${filmsCount || 0} films`
+      }
+    }
+  }
 })

@@ -35,6 +35,39 @@ export default defineType({
       options: {
         hotspot: true
       }
+    }),
+    defineField({
+      name: 'order',
+      title: 'Display Order',
+      type: 'number',
+      description: 'Lower numbers appear first'
     })
-  ]
+  ],
+  orderings: [
+    {
+      title: 'Display Order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }]
+    },
+    {
+      title: 'Year (Newest First)',
+      name: 'yearDesc',
+      by: [{ field: 'year', direction: 'desc' }]
+    }
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      subtitle: 'year',
+      categoryName: 'category.name',
+      media: 'image'
+    },
+    prepare(selection) {
+      const {title, subtitle, categoryName} = selection
+      return {
+        title: title,
+        subtitle: `${subtitle || 'No year'} • ${categoryName || 'No category'}`
+      }
+    }
+  }
 })
