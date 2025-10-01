@@ -64,6 +64,19 @@ export default defineType({
       ]
     }),
     defineField({
+      name: 'works',
+      title: 'Works',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'directorWork'}]
+        }
+      ],
+      description: 'Automatically synced from Director Works that reference this director',
+      readOnly: true
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',

@@ -6,10 +6,86 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {
+        source: 'title',
+        maxLength: 96,
+      },
+      validation: (Rule) => Rule.required()
+    }),
+    defineField({
       name: 'title',
       title: 'Title',
       type: 'string',
       validation: (Rule) => Rule.required()
+    }),
+    defineField({
+      name: 'subtitle',
+      title: 'Subtitle',
+      type: 'array',
+      of: [
+        {
+          type: 'block',
+          styles: [
+            {title: 'Normal', value: 'normal'},
+            {title: 'H2', value: 'h2'},
+            {title: 'H3', value: 'h3'},
+            {title: 'Quote', value: 'blockquote'}
+          ],
+          lists: [
+            {title: 'Bullet', value: 'bullet'},
+            {title: 'Number', value: 'number'}
+          ],
+          marks: {
+            decorators: [
+              {title: 'Strong', value: 'strong'},
+              {title: 'Emphasis', value: 'em'},
+              {title: 'Underline', value: 'underline'},
+              {title: 'Code', value: 'code'}
+            ],
+            annotations: [
+              {
+                title: 'URL',
+                name: 'link',
+                type: 'object',
+                fields: [
+                  {
+                    title: 'URL',
+                    name: 'href',
+                    type: 'url'
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          type: 'object',
+          name: 'htmlBlock',
+          title: 'HTML Block',
+          fields: [
+            {
+              name: 'html',
+              title: 'HTML Code',
+              type: 'text',
+              description: 'Enter raw HTML code here'
+            }
+          ],
+          preview: {
+            select: {
+              title: 'html'
+            },
+            prepare(selection) {
+              const {title} = selection
+              return {
+                title: title ? title.substring(0, 50) + '...' : 'HTML Block'
+              }
+            }
+          }
+        }
+      ]
     }),
     defineField({
       name: 'description',
@@ -50,14 +126,41 @@ export default defineType({
               }
             ]
           }
+        },
+        {
+          type: 'object',
+          name: 'htmlBlock',
+          title: 'HTML Block',
+          fields: [
+            {
+              name: 'html',
+              title: 'HTML Code',
+              type: 'text',
+              description: 'Enter raw HTML code here'
+            }
+          ],
+          preview: {
+            select: {
+              title: 'html'
+            },
+            prepare(selection) {
+              const {title} = selection
+              return {
+                title: title ? title.substring(0, 50) + '...' : 'HTML Block'
+              }
+            }
+          }
         }
       ]
     }),
     defineField({
-      name: 'url',
-      title: 'URL',
-      type: 'url',
-      description: 'Link to the service or related website'
+      name: 'heroVideo',
+      title: 'Hero Video',
+      type: 'file',
+      options: {
+        accept: 'video/*'
+      },
+      description: 'Video file for the hero section'
     }),
     defineField({
       name: 'features',
@@ -67,7 +170,7 @@ export default defineType({
     }),
     defineField({
       name: 'image',
-      title: 'Image',
+      title: 'Featured Image',
       type: 'image',
       options: {
         hotspot: true
@@ -93,22 +196,36 @@ export default defineType({
       description: 'Tags associated with this service'
     }),
 
-    // Field 2: Homepage Visibility
+    // Field 2: Featured Visibility
     defineField({
-      name: 'showOnHomepage',
-      title: 'Show on Homepage',
+      name: 'featured',
+      title: 'Featured',
       type: 'boolean',
-      description: 'Display this service in the homepage services section',
+      description: 'Display this service as featured',
       initialValue: false
     }),
 
-    // Field 3: Homepage Order
+    // Field 3: Featured Order
     defineField({
-      name: 'homepageOrder',
-      title: 'Homepage Display Order',
+      name: 'featuredOrder',
+      title: 'Featured Display Order',
       type: 'number',
-      description: 'Order for homepage display (lower numbers appear first)',
-      hidden: ({ document }) => !document?.showOnHomepage
+      description: 'Order for featured display (lower numbers appear first)',
+      hidden: ({ document }) => !document?.featured
+    }),
+
+    // Field 4: Related Projects
+    defineField({
+      name: 'projects',
+      title: 'Related Projects',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'project'}]
+        }
+      ],
+      description: 'Projects that use this service'
     })
   ],
   orderings: [

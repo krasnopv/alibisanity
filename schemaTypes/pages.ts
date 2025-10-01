@@ -38,8 +38,8 @@ export default defineType({
       description: 'Video file for the hero section'
     }),
     defineField({
-      name: 'heroVideoPoster',
-      title: 'Hero Video Poster',
+      name: 'image',
+      title: 'Featured Image',
       type: 'image',
       options: {
         hotspot: true
@@ -152,7 +152,7 @@ export default defineType({
     select: {
       title: 'title',
       subtitle: 'slug.current',
-      media: 'heroVideoPoster'
+      media: 'image'
     }
   }
 })
