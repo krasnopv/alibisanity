@@ -163,6 +163,23 @@ export default defineType({
       description: 'Video file for the hero section'
     }),
     defineField({
+      name: 'heroImage',
+      title: 'Hero Image',
+      type: 'image',
+      options: {
+        hotspot: true
+      },
+      fields: [
+        {
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+          description: 'Alternative text for accessibility'
+        }
+      ],
+      description: 'Hero image for the service page'
+    }),
+    defineField({
       name: 'features',
       title: 'Features',
       type: 'array',
@@ -199,13 +216,22 @@ export default defineType({
     // Field 2: Featured Visibility
     defineField({
       name: 'featured',
-      title: 'Featured',
+      title: 'Featured (show in Menu and Homepage)',
       type: 'boolean',
       description: 'Display this service as featured',
       initialValue: false
     }),
 
-    // Field 3: Featured Order
+    // Field 3: Show in Services
+    defineField({
+      name: 'showInServices',
+      title: 'Show in Services',
+      type: 'boolean',
+      description: 'Display this service in the services section',
+      initialValue: true
+    }),
+
+    // Field 4: Featured Order
     defineField({
       name: 'featuredOrder',
       title: 'Featured Display Order',
@@ -226,6 +252,20 @@ export default defineType({
         }
       ],
       description: 'Projects that use this service'
+    }),
+
+    // Field 5: Related Sub-Services
+    defineField({
+      name: 'subServices',
+      title: 'Related Sub-Services',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'subService'}]
+        }
+      ],
+      description: 'Sub-services related to this service'
     })
   ],
   orderings: [
