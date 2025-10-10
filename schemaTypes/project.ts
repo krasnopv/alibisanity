@@ -81,10 +81,12 @@ export default defineType({
     }),
     defineField({
       name: 'image',
-      title: 'Main Image',
+      title: 'Featured Image',
       type: 'image',
       options: {
-        hotspot: true
+        hotspot: true,
+        accept: 'image/*',
+        storeOriginalFilename: true
       },
       fields: [
         {
@@ -92,9 +94,25 @@ export default defineType({
           title: 'Alt Text',
           type: 'string',
           description: 'Alternative text for accessibility'
+        },
+        {
+          name: 'caption',
+          title: 'Caption',
+          type: 'string',
+          description: 'Optional caption for the featured image'
         }
       ],
-      validation: (Rule) => Rule.required()
+      description: 'Main featured image for the project. Recommended size: 1200x675px (16:9 aspect ratio). Images will be automatically optimized for web display.',
+      validation: (Rule) => Rule.required().custom((value: any) => {
+        if (!value) return 'Featured image is required'
+        
+        // Check if it's an image asset
+        if (value.asset && value.asset._ref) {
+          return true
+        }
+        
+        return 'Please upload a valid image file'
+      })
     }),
     defineField({
       name: 'videoTrailer',
@@ -150,7 +168,10 @@ export default defineType({
           title: 'Video Thumbnail',
           type: 'image',
           options: {
-            hotspot: true
+            hotspot: true,
+            accept: 'image/*',
+            // Store original filename for reference
+            storeOriginalFilename: true
           },
           fields: [
             {
@@ -158,9 +179,25 @@ export default defineType({
               title: 'Alt Text',
               type: 'string',
               description: 'Alternative text for accessibility'
+            },
+            {
+              name: 'caption',
+              title: 'Caption',
+              type: 'string',
+              description: 'Optional caption for the thumbnail'
             }
           ],
-          description: 'Custom thumbnail for the video (optional)'
+          description: 'Custom thumbnail for the video. Recommended size: 800x450px (16:9 aspect ratio). Images will be automatically optimized for web display.',
+          validation: (Rule) => Rule.custom((value: any) => {
+            if (!value) return true // Optional field
+            
+            // Check if it's an image asset
+            if (value.asset && value.asset._ref) {
+              return true
+            }
+            
+            return 'Please upload a valid image file'
+          })
         }
       ],
       description: 'Add a video trailer for the project - YouTube, Vimeo, or uploaded video'
@@ -180,62 +217,73 @@ export default defineType({
               validation: (Rule) => Rule.required()
             },
             {
-              name: 'person',
-              title: 'Person',
-              type: 'object',
-              fields: [
+              name: 'people',
+              title: 'People',
+              type: 'array',
+              of: [
                 {
-                  name: 'type',
-                  title: 'Person Type',
-                  type: 'string',
-                  options: {
-                    list: [
-                      { title: 'Team Member', value: 'teamMember' },
-                      { title: 'Manual Entry', value: 'manual' }
-                    ],
-                    layout: 'radio'
-                  },
-                  validation: (Rule) => Rule.required()
-                },
-                {
-                  name: 'teamMember',
-                  title: 'Team Member',
-                  type: 'reference',
-                  to: [{type: 'teamMember'}],
-                  hidden: ({parent}) => parent?.type !== 'teamMember',
-                  validation: (Rule) => Rule.custom((value, context) => {
-                    const parent = context.parent as any
-                    if (parent?.type === 'teamMember' && !value) {
-                      return 'Team member is required when team member is selected'
+                  type: 'object',
+                  fields: [
+                    {
+                      name: 'type',
+                      title: 'Person Type',
+                      type: 'string',
+                      options: {
+                        list: [
+                          { title: 'Team Member', value: 'teamMember' },
+                          { title: 'Manual Entry', value: 'manual' }
+                        ],
+                        layout: 'radio'
+                      },
+                      validation: (Rule) => Rule.required()
+                    },
+                    {
+                      name: 'teamMember',
+                      title: 'Team Member',
+                      type: 'reference',
+                      to: [{type: 'teamMember'}],
+                      hidden: ({parent}) => parent?.type !== 'teamMember',
+                      validation: (Rule) => Rule.custom((value, context) => {
+                        const parent = context.parent as any
+                        if (parent?.type === 'teamMember' && !value) {
+                          return 'Team member is required when team member is selected'
+                        }
+                        return true
+                      })
+                    },
+                    {
+                      name: 'manualName',
+                      title: 'Manual Name',
+                      type: 'string',
+                      hidden: ({parent}) => parent?.type !== 'manual',
+                      validation: (Rule) => Rule.custom((value, context) => {
+                        const parent = context.parent as any
+                        if (parent?.type === 'manual' && !value) {
+                          return 'Manual name is required when manual entry is selected'
+                        }
+                        return true
+                      })
                     }
-                    return true
-                  })
-                },
-                {
-                  name: 'manualName',
-                  title: 'Manual Name',
-                  type: 'string',
-                  hidden: ({parent}) => parent?.type !== 'manual',
-                  validation: (Rule) => Rule.custom((value, context) => {
-                    const parent = context.parent as any
-                    if (parent?.type === 'manual' && !value) {
-                      return 'Manual name is required when manual entry is selected'
-                    }
-                    return true
-                  })
+                  ]
                 }
-              ]
+              ],
+              description: 'Add multiple people for this credit'
             },
-            {
-              name: 'award',
-              title: 'Award',
-              type: 'reference',
-              to: [{type: 'award'}],
-              description: 'Optional award for this credit'
-            }
           ]
         }
       ]
+    }),
+    defineField({
+      name: 'awards',
+      title: 'Awards',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'award'}]
+        }
+      ],
+      description: 'Select awards won by this project'
     }),
     defineField({
       name: 'images',
@@ -282,6 +330,18 @@ export default defineType({
         }
       ],
       description: 'Select services related to this project'
+    }),
+    defineField({
+      name: 'subServices',
+      title: 'Related Sub-Services',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'subService'}]
+        }
+      ],
+      description: 'Select sub-services related to this project'
     }),
     defineField({
       name: 'order',

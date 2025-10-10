@@ -3,7 +3,7 @@ import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
 import {autoSyncDirectorWorks} from './plugins/autoSyncDirectorWorks'
-import {autoSyncProjectServices} from './plugins/autoSyncProjectServices'
+import {autoSyncWorkRelations} from './plugins/autoSyncWorkRelations'
 import { 
   FileText, 
   Film, 
@@ -84,6 +84,11 @@ export default defineConfig({
                       .id('services')
                       .icon(Wrench)
                       .child(S.documentList().id('services-list').filter('_type == "service"').apiVersion('2023-01-01')),
+                    S.listItem()
+                      .title('Sub-Services')
+                      .id('sub-services')
+                      .icon(Wrench)
+                      .child(S.documentList().id('sub-services-list').filter('_type == "subService"').apiVersion('2023-01-01')),
                   ])
               ),
             // Addresses
@@ -137,7 +142,7 @@ export default defineConfig({
     visionTool(),
     // duplicateActionV2() // Temporarily disabled to fix React hook error
     autoSyncDirectorWorks(),
-    autoSyncProjectServices()
+    autoSyncWorkRelations() // New comprehensive sync plugin
   ],
 
   schema: {
