@@ -65,7 +65,7 @@ export const autoSyncWorkRelations = definePlugin({
 })
 
 async function syncProjectRelations(client: any, doc: any) {
-  // When a project is published, sync all related services and sub-services
+  // When a project is published, sync all related services, sub-services, and related projects
   
   // Get all services that currently have this project in their projects array
   const servicesWithThisProject = await client.fetch(
@@ -77,13 +77,20 @@ async function syncProjectRelations(client: any, doc: any) {
     `*[_type == "subService" && references("${doc._id}")]._id`
   )
   
-  // Get the list of services and sub-services this project currently references
+  // Get all projects that currently have this project in their relatedProjects array
+  const projectsWithThisProject = await client.fetch(
+    `*[_type == "project" && references("${doc._id}")]._id`
+  )
+  
+  // Get the list of services, sub-services, and related projects this project currently references
   const currentServiceIds = doc?.services?.map((s: any) => s._ref) || []
   const currentSubServiceIds = doc?.subServices?.map((s: any) => s._ref) || []
+  const currentRelatedProjectIds = doc?.relatedProjects?.map((p: any) => p._ref) || []
   
-  // Combine both lists - services/sub-services currently selected AND those that used to have this project
+  // Combine both lists - services/sub-services/projects currently selected AND those that used to have this project
   const allServicesToUpdate = [...new Set([...currentServiceIds, ...servicesWithThisProject])]
   const allSubServicesToUpdate = [...new Set([...currentSubServiceIds, ...subServicesWithThisProject])]
+  const allRelatedProjectsToUpdate = [...new Set([...currentRelatedProjectIds, ...projectsWithThisProject])]
   
   // Update services
   for (const serviceId of allServicesToUpdate) {
@@ -108,6 +115,21 @@ async function syncProjectRelations(client: any, doc: any) {
     
     await client.patch(subServiceId).set({
       projects: allProjects.map((project: any) => ({
+        _type: 'reference',
+        _ref: project._id,
+        _key: project._id
+      }))
+    }).commit()
+  }
+  
+  // Update related projects (bidirectional sync)
+  for (const projectId of allRelatedProjectsToUpdate) {
+    const allRelatedProjects = await client.fetch(
+      `*[_type == "project" && !(_id in path("drafts.**")) && references("${projectId}")]`
+    )
+    
+    await client.patch(projectId).set({
+      relatedProjects: allRelatedProjects.map((project: any) => ({
         _type: 'reference',
         _ref: project._id,
         _key: project._id
