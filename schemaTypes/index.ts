@@ -11,6 +11,8 @@ import directorWork from "./directorWork"
 import teamMember from "./teamMember"
 import project from "./project"
 import subService from "./subService"
+import rebate from "./rebate"
+import studio from "./studio"
 
 export const schemaTypes = [
   film,
@@ -25,5 +27,7 @@ export const schemaTypes = [
   directorWork,
   teamMember,
   project,
-  subService
+  subService,
+  rebate,
+  studio
 ]

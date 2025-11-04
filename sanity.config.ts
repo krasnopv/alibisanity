@@ -16,7 +16,8 @@ import {
   Award,
   Video,
   Users,
-  Briefcase
+  Briefcase,
+  Building2
 } from 'lucide-react'
 // import {duplicateActionV2} from './plugins/duplicateActionV2'
 
@@ -39,6 +40,13 @@ export default defineConfig({
             .icon(FileText)
             .id('pages')
             .child(S.documentList().id('pages-list').filter('_type == "page"').apiVersion('2023-01-01')),
+
+            // Studios
+            S.listItem()
+            .title('Studios')
+            .icon(Building2)
+            .id('studios')
+            .child(S.documentList().id('studios-list').filter('_type == "studio"').apiVersion('2023-01-01')),
 
             // Films Group
             S.listItem()
@@ -136,6 +144,13 @@ export default defineConfig({
               .icon(Users)
               .id('team-members')
               .child(S.documentList().id('team-members-list').filter('_type == "teamMember"').apiVersion('2023-01-01')),
+            
+            // Rebates
+            S.listItem()
+              .title('Rebates')
+              .icon(Award)
+              .id('rebates')
+              .child(S.documentList().id('rebates-list').filter('_type == "rebate"').apiVersion('2023-01-01')),
             
           ])
     }), 
