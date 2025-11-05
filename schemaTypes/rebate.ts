@@ -127,6 +127,15 @@ export default defineType({
                 }
               ],
               description: 'List of eligible expenses'
+            }),
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: {
+                hotspot: true
+              },
+              description: 'Optional image for this section'
             })
           ],
           preview: {
@@ -176,6 +185,15 @@ export default defineType({
                 }
               ],
               description: 'List of qualifying requirements'
+            }),
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: {
+                hotspot: true
+              },
+              description: 'Optional image for this section'
             })
           ],
           preview: {
@@ -240,6 +258,15 @@ export default defineType({
                 }
               ],
               description: 'Rich text description for how to apply'
+            }),
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: {
+                hotspot: true
+              },
+              description: 'Optional image for this section'
             })
           ],
           preview: {
@@ -304,6 +331,15 @@ export default defineType({
                 }
               ],
               description: 'Rich text content for custom section'
+            }),
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: {
+                hotspot: true
+              },
+              description: 'Optional image for this section'
             })
           ],
           preview: {
