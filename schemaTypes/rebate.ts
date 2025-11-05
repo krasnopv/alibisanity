@@ -78,6 +78,15 @@ export default defineType({
             }
           ],
           description: 'Rich text description for the introduction'
+        }),
+        defineField({
+          name: 'image',
+          title: 'Image',
+          type: 'image',
+          options: {
+            hotspot: true
+          },
+          description: 'Optional image for the introduction section'
         })
       ]
     }),
