@@ -355,6 +355,13 @@ export default defineType({
       type: 'boolean',
       description: 'Check to show this project on the /immersive page as a featured project',
       initialValue: false
+    }),
+    defineField({
+      name: 'hideProject',
+      title: 'Hide Project',
+      type: 'boolean',
+      description: 'Check to hide this project from listings',
+      initialValue: false
     })
   ],
   preview: {
