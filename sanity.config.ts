@@ -4,6 +4,8 @@ import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
 import {autoSyncDirectorWorks} from './plugins/autoSyncDirectorWorks'
 import {autoSyncWorkRelations} from './plugins/autoSyncWorkRelations'
+import {bulkImportFilms} from './plugins/bulkImportFilms'
+import {BulkImportFilmsTool} from './plugins/bulkImportFilms'
 import { 
   FileText, 
   Film, 
@@ -16,7 +18,8 @@ import {
   Award,
   Video,
   Users,
-  Briefcase
+  Briefcase,
+  Upload
 } from 'lucide-react'
 // import {duplicateActionV2} from './plugins/duplicateActionV2'
 
@@ -48,6 +51,12 @@ export default defineConfig({
                 S.list()
                   .title('Films')
                   .items([
+                    S.listItem()
+                      .title('Bulk Import Films')
+                      .id('bulk-import-films')
+                      .icon(Upload)
+                      .child(S.component(BulkImportFilmsTool).title('Bulk Import Films')),
+                    S.divider(),
                     S.listItem()
                       .title('All Films')
                       .id('all-films')
@@ -149,7 +158,8 @@ export default defineConfig({
     visionTool(),
     // duplicateActionV2() // Temporarily disabled to fix React hook error
     autoSyncDirectorWorks(),
-    autoSyncWorkRelations() // New comprehensive sync plugin
+    autoSyncWorkRelations(), // New comprehensive sync plugin
+    bulkImportFilms()
   ],
 
   schema: {
