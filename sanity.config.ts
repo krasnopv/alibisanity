@@ -6,6 +6,8 @@ import {autoSyncDirectorWorks} from './plugins/autoSyncDirectorWorks'
 import {autoSyncWorkRelations} from './plugins/autoSyncWorkRelations'
 import {bulkImportFilms} from './plugins/bulkImportFilms'
 import {BulkImportFilmsTool} from './plugins/bulkImportFilms'
+import {bulkEdit} from './plugins/bulkEdit'
+import {BulkEditTool} from './plugins/bulkEdit'
 import { 
   FileText, 
   Film, 
@@ -19,7 +21,9 @@ import {
   Video,
   Users,
   Briefcase,
-  Upload
+  Upload,
+  Edit,
+  Building2
 } from 'lucide-react'
 // import {duplicateActionV2} from './plugins/duplicateActionV2'
 
@@ -36,6 +40,13 @@ export default defineConfig({
         S.list()
           .title('Content')
           .items([
+            // Bulk Edit Tool
+            S.listItem()
+              .title('Bulk Edit & Delete')
+              .id('bulk-edit')
+              .icon(Edit)
+              .child(S.component(BulkEditTool).title('Bulk Edit & Delete')),
+            S.divider(),
             // Pages Group
             S.listItem()
             .title('Pages')
@@ -106,6 +117,12 @@ export default defineConfig({
               .icon(MapPin)
               .id('addresses')
               .child(S.documentList().id('addresses-list').filter('_type == "address"').apiVersion('2023-01-01')),
+            // Studios
+            S.listItem()
+              .title('Studios')
+              .icon(Building2)
+              .id('studios')
+              .child(S.documentList().id('studios-list').filter('_type == "studio"').apiVersion('2023-01-01')),
             // Tags
             S.listItem()
               .title('Tags')
@@ -159,7 +176,8 @@ export default defineConfig({
     // duplicateActionV2() // Temporarily disabled to fix React hook error
     autoSyncDirectorWorks(),
     autoSyncWorkRelations(), // New comprehensive sync plugin
-    bulkImportFilms()
+    bulkImportFilms(),
+    bulkEdit()
   ],
 
   schema: {
