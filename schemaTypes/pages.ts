@@ -433,6 +433,87 @@ export default defineType({
               }
             }
           }
+        },
+        // Get in Touch section
+        {
+          type: 'object',
+          name: 'getInTouchSection',
+          title: 'Get in Touch',
+          fields: [
+            {
+              name: 'sectionId',
+              title: 'Section ID',
+              type: 'string',
+              description: 'Unique identifier for this section (used for navigation and styling)'
+            },
+            defineField({
+              name: 'title',
+              title: 'Title',
+              type: 'string'
+            }),
+            defineField({
+              name: 'description',
+              title: 'Description',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    {title: 'Normal', value: 'normal'},
+                    {title: 'H1', value: 'h1'},
+                    {title: 'H2', value: 'h2'},
+                    {title: 'H3', value: 'h3'},
+                    {title: 'H4', value: 'h4'},
+                    {title: 'Quote', value: 'blockquote'}
+                  ],
+                  lists: [
+                    {title: 'Bullet', value: 'bullet'},
+                    {title: 'Number', value: 'number'}
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: 'Strong', value: 'strong'},
+                      {title: 'Emphasis', value: 'em'},
+                      {title: 'Underline', value: 'underline'},
+                      {title: 'Code', value: 'code'}
+                    ],
+                    annotations: [
+                      {
+                        title: 'URL',
+                        name: 'link',
+                        type: 'object',
+                        fields: [
+                          { title: 'URL', name: 'href', type: 'url' }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }),
+            defineField({
+              name: 'buttonText',
+              title: 'Button Text',
+              type: 'string',
+              description: 'Text to display on the button'
+            }),
+            defineField({
+              name: 'email',
+              title: 'Email',
+              type: 'string',
+              validation: (Rule) => Rule.email().required(),
+              description: 'Email address for contact'
+            })
+          ],
+          preview: {
+            select: { title: 'title', email: 'email' },
+            prepare({title, email}) {
+              return { 
+                title: 'Get in Touch', 
+                subtitle: title ? `${title}${email ? ` - ${email}` : ''}` : email || 'Untitled'
+              }
+            }
+          }
         }
       ]
     }),
