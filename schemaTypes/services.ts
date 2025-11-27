@@ -193,6 +193,114 @@ export default defineType({
       }
     }),
     defineField({
+      name: 'reels',
+      title: 'Reels',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'type',
+              title: 'Video Type',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'YouTube', value: 'youtube' },
+                  { title: 'Vimeo', value: 'vimeo' },
+                  { title: 'Uploaded Video', value: 'upload' }
+                ],
+                layout: 'radio'
+              },
+              validation: (Rule) => Rule.required()
+            },
+            {
+              name: 'url',
+              title: 'Video URL',
+              type: 'url',
+              hidden: ({parent}) => !parent?.type || parent?.type === 'upload',
+              description: 'YouTube or Vimeo URL (e.g., https://www.youtube.com/watch?v=... or https://vimeo.com/...)',
+              validation: (Rule) => Rule.custom((value, context) => {
+                const parent = context.parent as any
+                if (parent?.type && parent.type !== 'upload' && !value) {
+                  return 'Video URL is required for YouTube/Vimeo videos'
+                }
+                return true
+              })
+            },
+            {
+              name: 'videoFile',
+              title: 'Uploaded Video',
+              type: 'file',
+              options: {
+                accept: 'video/*'
+              },
+              hidden: ({parent}) => parent?.type !== 'upload',
+              validation: (Rule) => Rule.custom((value, context) => {
+                const parent = context.parent as any
+                if (parent?.type === 'upload' && !value) {
+                  return 'Video file is required when uploading'
+                }
+                return true
+              })
+            },
+            {
+              name: 'thumbnail',
+              title: 'Video Thumbnail',
+              type: 'image',
+              options: {
+                hotspot: true,
+                accept: 'image/*',
+                storeOriginalFilename: true
+              },
+              fields: [
+                {
+                  name: 'alt',
+                  title: 'Alt Text',
+                  type: 'string',
+                  description: 'Alternative text for accessibility'
+                },
+                {
+                  name: 'caption',
+                  title: 'Caption',
+                  type: 'string',
+                  description: 'Optional caption for the thumbnail'
+                }
+              ],
+              description: 'Custom thumbnail for the video. Recommended size: 800x450px (16:9 aspect ratio). Images will be automatically optimized for web display.',
+              validation: (Rule) => Rule.custom((value: any) => {
+                if (!value) return true // Optional field
+                
+                // Check if it's an image asset
+                if (value.asset && value.asset._ref) {
+                  return true
+                }
+                
+                return 'Please upload a valid image file'
+              })
+            }
+          ],
+          preview: {
+            select: {
+              type: 'type',
+              url: 'url',
+              media: 'thumbnail'
+            },
+            prepare(selection) {
+              const {type, url} = selection
+              const typeLabel = type === 'youtube' ? 'YouTube' : type === 'vimeo' ? 'Vimeo' : 'Uploaded Video'
+              return {
+                title: typeLabel,
+                subtitle: url || 'Video file',
+                media: selection.media
+              }
+            }
+          }
+        }
+      ],
+      description: 'Add video reels - YouTube, Vimeo, or uploaded videos'
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',
