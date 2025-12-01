@@ -22,6 +22,25 @@ export default defineType({
       validation: (Rule) => Rule.required()
     }),
     defineField({
+      name: 'logo',
+      title: 'Logo',
+      type: 'image',
+      options: {
+        hotspot: true,
+        accept: 'image/*',
+        storeOriginalFilename: true
+      },
+      fields: [
+        {
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+          description: 'Alternative text for accessibility'
+        }
+      ],
+      description: 'Logo image for the studio'
+    }),
+    defineField({
       name: 'description',
       title: 'Description',
       type: 'array',
