@@ -38,6 +38,52 @@ export default defineType({
       description: 'Video file for the hero section'
     }),
     defineField({
+      name: 'heroVideoLink',
+      title: 'Hero Video Link',
+      type: 'object',
+      fields: [
+        {
+          name: 'type',
+          title: 'Video Type',
+          type: 'string',
+          options: {
+            list: [
+              { title: 'Vimeo', value: 'vimeo' },
+              { title: 'YouTube', value: 'youtube' },
+              { title: 'Custom', value: 'custom' }
+            ],
+            layout: 'radio'
+          },
+          validation: (Rule) => Rule.required(),
+          initialValue: 'vimeo',
+          description: 'Select the video platform or custom link'
+        },
+        {
+          name: 'url',
+          title: 'Video URL',
+          type: 'url',
+          validation: (Rule) => Rule.custom((value, context) => {
+            const parent = context.parent as any
+            if (!parent?.type) {
+              return true
+            }
+            if (!value || typeof value !== 'string') {
+              return 'Video URL is required'
+            }
+            if (parent.type === 'vimeo' && !value.includes('vimeo.com')) {
+              return 'Please enter a valid Vimeo URL'
+            }
+            if (parent.type === 'youtube' && !value.includes('youtube.com') && !value.includes('youtu.be')) {
+              return 'Please enter a valid YouTube URL'
+            }
+            return true
+          }),
+          description: 'Enter the video URL (Vimeo, YouTube, or custom link)'
+        }
+      ],
+      description: 'Link to a video from Vimeo, YouTube, or a custom source'
+    }),
+    defineField({
       name: 'heroVideoPoster',
       title: 'Hero Video Poster',
       type: 'image',
