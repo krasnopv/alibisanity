@@ -18,6 +18,13 @@ export default defineType({
       validation: (Rule) => Rule.required()
     }),
     defineField({
+      name: 'director',
+      title: 'Related Director',
+      type: 'reference',
+      to: [{type: 'director'}],
+      description: 'Director associated with this project. Automatically synced when this project is added to a director\'s works'
+    }),
+    defineField({
       name: 'fullTitle',
       title: 'Full Title',
       type: 'string',

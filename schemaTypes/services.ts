@@ -240,6 +240,91 @@ export default defineType({
       }
     }),
     defineField({
+      name: 'reels',
+      title: 'Reels',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'reel',
+          title: 'Reel',
+          fields: [
+            {
+              name: 'thumbnail',
+              title: 'Thumbnail',
+              type: 'image',
+              options: {
+                hotspot: true
+              },
+              fields: [
+                {
+                  name: 'caption',
+                  title: 'Caption',
+                  type: 'string',
+                  description: 'Caption for the thumbnail image'
+                }
+              ],
+              validation: (Rule) => Rule.required()
+            },
+            {
+              name: 'type',
+              title: 'Video Type',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Vimeo', value: 'vimeo' },
+                  { title: 'YouTube', value: 'youtube' },
+                  { title: 'Custom', value: 'custom' }
+                ],
+                layout: 'radio'
+              },
+              validation: (Rule) => Rule.required(),
+              initialValue: 'vimeo',
+              description: 'Select the video platform or custom link'
+            },
+            {
+              name: 'url',
+              title: 'Video URL',
+              type: 'url',
+              validation: (Rule) => Rule.custom((value, context) => {
+                const parent = context.parent as any
+                if (!parent?.type) {
+                  return true
+                }
+                if (!value || typeof value !== 'string') {
+                  return 'Video URL is required'
+                }
+                if (parent.type === 'vimeo' && !value.includes('vimeo.com')) {
+                  return 'Please enter a valid Vimeo URL'
+                }
+                if (parent.type === 'youtube' && !value.includes('youtube.com') && !value.includes('youtu.be')) {
+                  return 'Please enter a valid YouTube URL'
+                }
+                return true
+              }),
+              description: 'Enter the video URL (Vimeo, YouTube, or custom link)'
+            }
+          ],
+          preview: {
+            select: {
+              thumbnail: 'thumbnail',
+              caption: 'thumbnail.caption',
+              type: 'type',
+              url: 'url'
+            },
+            prepare({thumbnail, caption, type, url}) {
+              return {
+                title: caption || 'Reel',
+                subtitle: `${type ? type.charAt(0).toUpperCase() + type.slice(1) : ''}${url ? ` - ${url}` : ''}`,
+                media: thumbnail
+              }
+            }
+          }
+        }
+      ],
+      description: 'Collection of video reels for this service'
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',
