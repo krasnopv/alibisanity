@@ -5,8 +5,8 @@ export const autoSyncDirectorWorks = definePlugin({
   name: 'auto-sync-director-works',
   document: {
     actions: (prev, context) => {
-      // Only modify actions for directorWork and director types
-      if (context.schemaType !== 'directorWork' && context.schemaType !== 'director') {
+      // Only modify actions for directorWork, director, and project types
+      if (context.schemaType !== 'directorWork' && context.schemaType !== 'director' && context.schemaType !== 'project') {
         return prev
       }
       
@@ -25,7 +25,14 @@ export const autoSyncDirectorWorks = definePlugin({
           return {
             ...originalResult,
             onHandle: async () => {
-              // Call original onHandle first
+              const client = context.getClient({apiVersion: '2023-01-01'})
+              
+              // Capture the draft data BEFORE publishing (to preserve manual selections)
+              const draftData = props.draft
+              const draftId = draftData?._id || props.published?._id
+              const publishedId = draftId?.replace('drafts.', '')
+              
+              // Call original onHandle to publish
               if (originalResult.onHandle) {
                 await originalResult.onHandle()
               }
@@ -33,21 +40,27 @@ export const autoSyncDirectorWorks = definePlugin({
               // Wait a moment for Sanity to fully commit the document
               await new Promise(resolve => setTimeout(resolve, 500))
               
-              // Then sync
-              const client = context.getClient({apiVersion: '2023-01-01'})
-              // Use the published ID (without drafts. prefix) since draft is deleted after publish
-              const draftId = props.draft?._id || props.published?._id
-              const publishedId = draftId?.replace('drafts.', '')
-              
+              // Fetch the published document
               const doc = await client.fetch(
                 `*[_id == "${publishedId}"][0]`
               )
               
-              // Sync based on document type
-              if (context.schemaType === 'directorWork') {
-                await syncDirectorWork(client, doc)
-              } else if (context.schemaType === 'director') {
-                await syncDirector(client, doc)
+              // For directors, use draft data if available to preserve manual selections
+              if (context.schemaType === 'director' && draftData) {
+                const docWithDraftWorks = {
+                  ...doc,
+                  works: draftData.works || doc.works
+                }
+                await syncDirector(client, docWithDraftWorks)
+              } else {
+                // Sync based on document type
+                if (context.schemaType === 'directorWork') {
+                  await syncDirectorWork(client, doc)
+                } else if (context.schemaType === 'director') {
+                  await syncDirector(client, doc)
+                } else if (context.schemaType === 'project') {
+                  await syncProject(client, doc)
+                }
               }
             }
           }
@@ -82,25 +95,107 @@ async function syncDirectorWork(client: any, doc: any) {
 }
 
 async function syncDirector(client: any, doc: any) {
-  // When a director is published, we could sync all their works
-  // For now, we'll just ensure all works pointing to this director are valid
-  // Get all directors that currently have works
-  const directorsWithWorks = await client.fetch(
-    `*[_type == "director" && count(*[_type == "directorWork" && references(^._id)]) > 0]._id`
+  // When a director is published, sync their works and update Projects
+  const directorId = doc._id
+  
+  // Preserve the manually selected works from the document
+  const manualWorks = doc.works && Array.isArray(doc.works) 
+    ? doc.works.filter((work: any) => work._ref).map((work: any) => ({
+        _type: 'reference',
+        _ref: work._ref,
+        _key: work._key || work._ref
+      }))
+    : []
+  
+  // Get all directorWorks that reference this director (auto-synced)
+  const autoSyncedDirectorWorks = await client.fetch(
+    `*[_type == "directorWork" && !(_id in path("drafts.**")) && references("${directorId}")]`
   )
   
-  // Update each director's works array
-  for (const directorId of directorsWithWorks) {
-    const allWorks = await client.fetch(
-      `*[_type == "directorWork" && !(_id in path("drafts.**")) && references("${directorId}")]`
+  // Get all work references from manual selection
+  const manualWorkRefs = manualWorks.map((w: any) => w._ref)
+  
+  // Fetch the actual documents to determine their type
+  const manualWorkDocs = manualWorkRefs.length > 0 
+    ? await client.fetch(
+        `*[_id in ${JSON.stringify(manualWorkRefs)} && !(_id in path("drafts.**"))]`
+      )
+    : []
+  
+  // Separate projects and directorWorks from manual selection
+  const projectRefs = manualWorkDocs
+    .filter((work: any) => work._type === 'project')
+    .map((work: any) => work._id)
+  
+  // Update all Projects to reference this director
+  for (const projectRef of projectRefs) {
+    try {
+      await client.patch(projectRef).set({
+        director: {
+          _type: 'reference',
+          _ref: directorId
+        }
+      }).commit()
+    } catch (error) {
+      console.error(`Error syncing project ${projectRef}:`, error)
+    }
+  }
+  
+  // Create a map of manually selected works by ref for deduplication
+  const manualWorksMap = new Map(manualWorks.map((w: any) => [w._ref, w]))
+  
+  // Add auto-synced directorWorks that aren't already in manual selection
+  const autoSyncedWorks = autoSyncedDirectorWorks
+    .filter((work: any) => !manualWorksMap.has(work._id))
+    .map((work: any) => ({
+      _type: 'reference',
+      _ref: work._id,
+      _key: work._id
+    }))
+  
+  // Combine: preserve manual selection + add auto-synced directorWorks
+  const allWorks = [...manualWorks, ...autoSyncedWorks]
+  
+  // Only update if there are changes to avoid unnecessary writes
+  await client.patch(directorId).set({
+    works: allWorks
+  }).commit()
+}
+
+async function syncProject(client: any, doc: any) {
+  // When a project is published, find directors that have this project in their works
+  // and ensure the project references them
+  if (doc && doc._id) {
+    const projectId = doc._id
+    
+    // Find all directors that have this project in their works array
+    // We need to check the works array for references to this project
+    const allDirectors = await client.fetch(
+      `*[_type == "director" && !(_id in path("drafts.**"))]`
     )
     
-    await client.patch(directorId).set({
-      works: allWorks.map((work: any) => ({
-        _type: 'reference',
-        _ref: work._id,
-        _key: work._id
-      }))
-    }).commit()
+    const directorsWithThisProject = allDirectors
+      .filter((director: any) => 
+        director.works && 
+        Array.isArray(director.works) && 
+        director.works.some((work: any) => work._ref === projectId)
+      )
+      .map((director: any) => director._id)
+    
+    // Update the project to reference the first director found
+    // (Projects can only reference one director based on the schema)
+    if (directorsWithThisProject.length > 0) {
+      const directorId = directorsWithThisProject[0]
+      try {
+        await client.patch(projectId).set({
+          director: {
+            _type: 'reference',
+            _ref: directorId
+          }
+        }).commit()
+      } catch (error) {
+        console.error(`Error syncing project director reference:`, error)
+      }
+    }
   }
 }

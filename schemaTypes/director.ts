@@ -70,11 +70,10 @@ export default defineType({
       of: [
         {
           type: 'reference',
-          to: [{type: 'directorWork'}]
+          to: [{type: 'directorWork'}, {type: 'project'}]
         }
       ],
-      description: 'Automatically synced from Director Works that reference this director',
-      readOnly: true
+      description: 'Director works and projects. Can be manually edited or automatically synced from Director Works that reference this director'
     }),
     defineField({
       name: 'order',
