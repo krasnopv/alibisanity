@@ -181,6 +181,13 @@ export default defineType({
               description: 'Unique identifier for this section (used for navigation and styling)'
             },
             {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display'
+            },
+            {
               name: 'enabled',
               title: 'Enable',
               type: 'boolean',
@@ -205,6 +212,13 @@ export default defineType({
               title: 'Section ID',
               type: 'string',
               description: 'Unique identifier for this section (used for navigation and styling)'
+            },
+            {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display'
             },
             {
               name: 'schemaType',
@@ -266,6 +280,13 @@ export default defineType({
               title: 'Section ID',
               type: 'string',
               description: 'Unique identifier for this section (used for navigation and styling)'
+            },
+            {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display'
             },
             {
               name: 'title',
@@ -386,6 +407,13 @@ export default defineType({
               description: 'Unique identifier for this section (used for navigation and styling)'
             },
             {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display'
+            },
+            {
               name: 'enabled',
               title: 'Enable',
               type: 'boolean',
@@ -427,6 +455,13 @@ export default defineType({
               description: 'Unique identifier for this section (used for navigation and styling)'
             },
             {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display'
+            },
+            {
               name: 'enabled',
               title: 'Enable',
               type: 'boolean',
@@ -466,6 +501,13 @@ export default defineType({
               title: 'Section ID',
               type: 'string',
               description: 'Unique identifier for this section (used for navigation and styling)'
+            },
+            {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display'
             },
             {
               name: 'title',
@@ -532,6 +574,13 @@ export default defineType({
               title: 'Section ID',
               type: 'string',
               description: 'Unique identifier for this section (used for navigation and styling)'
+            },
+            {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display'
             },
             defineField({
               name: 'title',
