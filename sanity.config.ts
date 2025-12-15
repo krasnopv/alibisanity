@@ -23,7 +23,9 @@ import {
   Briefcase,
   Upload,
   Edit,
-  Building2
+  Building2,
+  Settings,
+  Search
 } from 'lucide-react'
 // import {duplicateActionV2} from './plugins/duplicateActionV2'
 
@@ -42,10 +44,10 @@ export default defineConfig({
           .items([
             // Bulk Edit Tool
             S.listItem()
-              .title('Bulk Edit & Delete')
+              .title('Bulk Edit, Export & Delete')
               .id('bulk-edit')
               .icon(Edit)
-              .child(S.component(BulkEditTool).title('Bulk Edit & Delete')),
+              .child(S.component(BulkEditTool).title('Bulk Edit, Export & Delete')),
             S.divider(),
             // Pages Group
             S.listItem()
@@ -169,6 +171,22 @@ export default defineConfig({
               .icon(Award)
               .id('rebates')
               .child(S.documentList().id('rebates-list').filter('_type == "rebate"').apiVersion('2023-01-01')),
+            
+            // Settings Group
+            S.listItem()
+              .title('Settings')
+              .icon(Settings)
+              .child(
+                S.list()
+                  .title('Settings')
+                  .items([
+                    S.listItem()
+                      .title('SEO')
+                      .id('seo')
+                      .icon(Search)
+                      .child(S.documentList().id('seo-list').filter('_type == "seoMetadata"').apiVersion('2023-01-01')),
+                  ])
+              ),
             
           ])
     }), 

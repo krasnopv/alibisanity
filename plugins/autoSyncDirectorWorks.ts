@@ -53,11 +53,11 @@ export const autoSyncDirectorWorks = definePlugin({
                 }
                 await syncDirector(client, docWithDraftWorks)
               } else {
-                // Sync based on document type
-                if (context.schemaType === 'directorWork') {
-                  await syncDirectorWork(client, doc)
-                } else if (context.schemaType === 'director') {
-                  await syncDirector(client, doc)
+              // Sync based on document type
+              if (context.schemaType === 'directorWork') {
+                await syncDirectorWork(client, doc)
+              } else if (context.schemaType === 'director') {
+                await syncDirector(client, doc)
                 } else if (context.schemaType === 'project') {
                   await syncProject(client, doc)
                 }
@@ -109,9 +109,9 @@ async function syncDirector(client: any, doc: any) {
   
   // Get all directorWorks that reference this director (auto-synced)
   const autoSyncedDirectorWorks = await client.fetch(
-    `*[_type == "directorWork" && !(_id in path("drafts.**")) && references("${directorId}")]`
-  )
-  
+      `*[_type == "directorWork" && !(_id in path("drafts.**")) && references("${directorId}")]`
+    )
+    
   // Get all work references from manual selection
   const manualWorkRefs = manualWorks.map((w: any) => w._ref)
   
@@ -148,10 +148,10 @@ async function syncDirector(client: any, doc: any) {
   const autoSyncedWorks = autoSyncedDirectorWorks
     .filter((work: any) => !manualWorksMap.has(work._id))
     .map((work: any) => ({
-      _type: 'reference',
-      _ref: work._id,
-      _key: work._id
-    }))
+        _type: 'reference',
+        _ref: work._id,
+        _key: work._id
+      }))
   
   // Combine: preserve manual selection + add auto-synced directorWorks
   const allWorks = [...manualWorks, ...autoSyncedWorks]
@@ -192,7 +192,7 @@ async function syncProject(client: any, doc: any) {
             _type: 'reference',
             _ref: directorId
           }
-        }).commit()
+    }).commit()
       } catch (error) {
         console.error(`Error syncing project director reference:`, error)
       }

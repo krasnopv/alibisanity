@@ -13,6 +13,7 @@ import project from "./project"
 import subService from "./subService"
 import rebate from "./rebate"
 import studio from "./studio"
+import seoMetadata from "./seoMetadata"
 
 export const schemaTypes = [
   film,
@@ -29,5 +30,6 @@ export const schemaTypes = [
   project,
   subService,
   rebate,
-  studio
+  studio,
+  seoMetadata
 ]

@@ -375,7 +375,23 @@ export default defineType({
     select: {
       title: 'title',
       subtitle: 'subtitle',
+      order: 'order',
       media: 'image'
+    },
+    prepare({title, subtitle, order, media}) {
+      const parts = []
+      if (subtitle) {
+        parts.push(subtitle)
+      }
+      if (order !== undefined && order !== null) {
+        parts.push(`Order: ${order}`)
+      }
+      
+      return {
+        title: title,
+        subtitle: parts.length > 0 ? parts.join(' - ') : 'No subtitle',
+        media: media
+      }
     }
   },
   orderings: [
