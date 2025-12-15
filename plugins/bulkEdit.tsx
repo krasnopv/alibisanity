@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useMemo} from 'react'
 import {definePlugin, useClient, useSchema} from 'sanity'
-import {Trash2, Edit, X, Check, CheckSquare, Square} from 'lucide-react'
+import {Trash2, Edit, X, Check, CheckSquare, Square, Download} from 'lucide-react'
 import {
   Box,
   Card,
@@ -133,6 +133,121 @@ function BulkEditTool() {
     setShowBulkEditModal(true)
   }
 
+  // Convert value to CSV-safe string
+  const escapeCSV = (value: any): string => {
+    if (value === null || value === undefined) return ''
+    const str = String(value)
+    // If contains comma, quote, or newline, wrap in quotes and escape quotes
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
+  // Flatten nested objects/arrays for CSV
+  const flattenValue = (value: any, maxDepth = 2): string => {
+    if (value === null || value === undefined) return ''
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return String(value)
+    }
+    if (Array.isArray(value)) {
+      if (maxDepth <= 0) return '[Array]'
+      return value.map(item => flattenValue(item, maxDepth - 1)).join('; ')
+    }
+    if (typeof value === 'object') {
+      if (maxDepth <= 0) return '[Object]'
+      // Handle reference objects
+      if (value._type === 'reference' && value._ref) {
+        return value._ref
+      }
+      // Handle image/file objects
+      if (value._type === 'image' || value._type === 'file') {
+        if (value.asset?._ref) return value.asset._ref
+        return '[Image/File]'
+      }
+      // Handle slug objects
+      if (value.current) return value.current
+      // Handle other objects - convert to JSON string
+      try {
+        return JSON.stringify(value).substring(0, 200)
+      } catch {
+        return '[Object]'
+      }
+    }
+    return String(value)
+  }
+
+  const handleExportCSV = () => {
+    if (selectedIds.size === 0) {
+      alert('Please select at least one document to export')
+      return
+    }
+
+    // Get selected documents
+    const selectedDocs = filteredDocuments.filter(doc => selectedIds.has(doc._id))
+    
+    if (selectedDocs.length === 0) {
+      alert('No documents selected for export')
+      return
+    }
+
+    // Collect all unique field names from all documents
+    const allFields = new Set<string>()
+    selectedDocs.forEach(doc => {
+      Object.keys(doc).forEach(key => {
+        // Skip internal Sanity fields except _id and _type
+        if (!key.startsWith('_') || key === '_id' || key === '_type' || key === '_createdAt' || key === '_updatedAt') {
+          allFields.add(key)
+        }
+      })
+    })
+
+    // Sort fields: _id, _type first, then _createdAt, _updatedAt, then alphabetical
+    const sortedFields = Array.from(allFields).sort((a, b) => {
+      const order: Record<string, number> = {
+        '_id': 0,
+        '_type': 1,
+        '_createdAt': 2,
+        '_updatedAt': 3
+      }
+      const aOrder = order[a] ?? 100
+      const bOrder = order[b] ?? 100
+      if (aOrder !== bOrder) return aOrder - bOrder
+      return a.localeCompare(b)
+    })
+
+    // Build CSV header
+    const headers = sortedFields.map(field => escapeCSV(field))
+    const csvRows = [headers.join(',')]
+
+    // Build CSV rows
+    selectedDocs.forEach(doc => {
+      const row = sortedFields.map(field => {
+        const value = doc[field]
+        const flattened = flattenValue(value)
+        return escapeCSV(flattened)
+      })
+      csvRows.push(row.join(','))
+    })
+
+    // Create CSV content
+    const csvContent = csvRows.join('\n')
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `${selectedSchemaType}_export_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    alert(`Successfully exported ${selectedDocs.length} document(s) to CSV`)
+  }
+
   const handleBulkEditSave = async (updates: Record<string, any>) => {
     if (selectedIds.size === 0) return
 
@@ -175,9 +290,9 @@ function BulkEditTool() {
     <Box padding={4}>
       <Stack space={4}>
         <Stack space={3}>
-          <Heading size={1}>Bulk Edit & Delete</Heading>
+          <Heading size={1}>Bulk Edit, Export & Delete</Heading>
           <Text muted>
-            Select multiple items to edit common fields or delete them.
+            Select multiple items to edit common fields, export to CSV, or delete them.
           </Text>
         </Stack>
 
@@ -215,6 +330,13 @@ function BulkEditTool() {
                     text="Clear"
                     mode="ghost"
                     onClick={handleClearSelection}
+                    disabled={loading}
+                  />
+                  <Button
+                    text="Export CSV"
+                    tone="default"
+                    icon={Download}
+                    onClick={handleExportCSV}
                     disabled={loading}
                   />
                   <Button
@@ -581,7 +703,7 @@ export const bulkEdit = definePlugin({
         ...prev,
         {
           name: 'bulk-edit',
-          title: 'Bulk Edit & Delete',
+          title: 'Bulk Edit, Export & Delete',
           icon: Edit,
           component: BulkEditTool,
         },
