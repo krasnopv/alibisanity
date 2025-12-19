@@ -13,7 +13,13 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required()
+      description: 'URL-friendly identifier for this service. Without a slug, the service page will not be accessible.',
+      validation: (Rule) => Rule.custom((value) => {
+        if (!value || !value.current) {
+          return 'Without a slug, the service page will not be accessible on the website.'
+        }
+        return true
+      }).warning()
     }),
     defineField({
       name: 'title',
