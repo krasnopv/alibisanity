@@ -31,3 +31,7 @@
 # Backup files
 *.tar.gz
 production-backup.tar.gz
+
+# Temporary files
+/tmp
+tmp/
