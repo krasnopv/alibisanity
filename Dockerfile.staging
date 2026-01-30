@@ -1,0 +1,52 @@
+# Use Node.js 20 Alpine as base image (matching front-end project)
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Set environment variables for staging build
+ENV SANITY_PROJECT_ID=srer6l4b
+ENV SANITY_DATASET=staging
+ENV SANITY_STUDIO_TITLE="Alibi (Staging)"
+ENV NODE_ENV=production
+
+# Build the Sanity Studio for staging
+RUN npm run build:staging
+
+# Production image, serve static files
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NODE_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 sanity
+
+# Install serve to serve static files
+RUN npm install -g serve
+
+# Copy the built Studio (dist folder)
+COPY --from=builder --chown=sanity:nodejs /app/dist ./dist
+
+USER sanity
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Serve the static files from dist folder
+CMD ["serve", "-s", "dist", "-l", "3000"]

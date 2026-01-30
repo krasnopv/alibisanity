@@ -6,10 +6,18 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "sanity dev",
+    "dev:staging": "cross-env SANITY_DATASET=staging SANITY_STUDIO_TITLE='Alibi (Staging)' sanity dev",
+    "dev:production": "cross-env SANITY_DATASET=production SANITY_STUDIO_TITLE='Alibi (Production)' sanity dev",
     "start": "sanity start",
     "build": "sanity build",
+    "build:staging": "cross-env SANITY_DATASET=staging SANITY_STUDIO_TITLE='Alibi (Staging)' sanity build",
+    "build:production": "cross-env SANITY_DATASET=production SANITY_STUDIO_TITLE='Alibi (Production)' sanity build",
     "deploy": "sanity deploy",
-    "deploy-graphql": "sanity graphql deploy"
+    "deploy-graphql": "sanity graphql deploy",
+    "docker:build:staging": "docker build -f Dockerfile.staging -t alibi-studio-staging .",
+    "docker:up:staging": "docker-compose -f docker-compose.staging.yml up -d",
+    "docker:down:staging": "docker-compose -f docker-compose.staging.yml down",
+    "migrate:to-staging": "node scripts/migrate-to-staging.js"
   },
   "keywords": [
     "sanity"
@@ -25,6 +33,7 @@
   "devDependencies": {
     "@sanity/eslint-config-studio": "^5.0.2",
     "@types/react": "^19.1",
+    "cross-env": "^7.0.3",
     "eslint": "^9.28",
     "prettier": "^3.5",
     "typescript": "^5.8"

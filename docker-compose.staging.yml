@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  alibi-studio-staging:
+    build:
+      context: .
+      dockerfile: Dockerfile.staging
+    image: alibi-studio-staging:latest
+    container_name: alibi-studio-staging
+    restart: unless-stopped
+    ports:
+      - "3200:3000"  # Different port from front-end (3100) to avoid conflicts
+    environment:
+      - NODE_ENV=production
+      - SANITY_PROJECT_ID=srer6l4b
+      - SANITY_DATASET=staging
+    networks:
+      - alibi-network
+
+networks:
+  alibi-network:
+    driver: bridge

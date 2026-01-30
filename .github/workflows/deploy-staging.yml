@@ -1,0 +1,123 @@
+name: Deploy Staging Studio to Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to confirm deployment'
+        required: true
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'schemaTypes/**'
+      - 'plugins/**'
+      - 'sanity.config.ts'
+      - 'sanity.cli.ts'
+      - 'package.json'
+      - 'Dockerfile.staging'
+      - 'docker-compose.staging.yml'
+      - '.github/workflows/deploy-staging.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate deployment confirmation (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "deploy" ]; then
+            echo "❌ Deployment cancelled. You must type 'deploy' to confirm."
+            exit 1
+          fi
+          echo "✅ Deployment confirmed"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build staging Studio
+        env:
+          SANITY_PROJECT_ID: srer6l4b
+          SANITY_DATASET: staging
+          SANITY_STUDIO_TITLE: "Alibi (Staging)"
+        run: npm run build:staging
+
+      - name: Build Docker image
+        run: |
+          docker build -f Dockerfile.staging -t alibi-studio-staging:latest .
+
+      - name: Save Docker image
+        run: |
+          docker save alibi-studio-staging:latest | gzip > alibi-studio-staging.tar.gz
+
+      - name: Copy Docker image to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_SERVER_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          port: ${{ secrets.STAGING_SERVER_PORT || 2219 }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          source: "alibi-studio-staging.tar.gz"
+          target: "/opt/alibi-studio/"
+
+      - name: Copy docker-compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_SERVER_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          port: ${{ secrets.STAGING_SERVER_PORT || 2219 }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          source: "docker-compose.staging.yml"
+          target: "/opt/alibi-studio/"
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_SERVER_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          port: ${{ secrets.STAGING_SERVER_PORT || 2219 }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          script: |
+            cd /opt/alibi-studio
+            
+            # Stop existing container
+            docker-compose -f docker-compose.staging.yml down || true
+            
+            # Load new image
+            docker load < alibi-studio-staging.tar.gz
+            
+            # Tag the image
+            docker tag alibi-studio-staging:latest alibi-studio-staging:latest
+            
+            # Start new container
+            docker-compose -f docker-compose.staging.yml up -d
+            
+            # Cleanup
+            rm -f alibi-studio-staging.tar.gz
+            
+            # Health check
+            sleep 5
+            if docker ps | grep -q alibi-studio-staging; then
+              echo "✅ Container is running"
+              docker ps | grep alibi-studio-staging
+            else
+              echo "❌ Container failed to start"
+              docker-compose -f docker-compose.staging.yml logs
+              exit 1
+            fi
+
+      - name: Deployment success
+        run: |
+          echo "✅ Staging Studio deployed successfully!"
+          echo "🌐 Access at: http://${{ secrets.STAGING_SERVER_HOST }}:3200"

@@ -31,10 +31,10 @@ import {
 
 export default defineConfig({
   name: 'default',
-  title: 'Alibi',
+  title: process.env.SANITY_STUDIO_TITLE || 'Alibi',
 
-  projectId: 'srer6l4b',
-  dataset: 'production',
+  projectId: process.env.SANITY_PROJECT_ID || 'srer6l4b',
+  dataset: process.env.SANITY_DATASET || 'production',
 
   plugins: [
     structureTool({
