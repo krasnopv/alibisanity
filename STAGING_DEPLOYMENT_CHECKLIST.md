@@ -231,6 +231,22 @@ sudo systemctl reload nginx
 - [ ] Connects to `staging` dataset
 - [ ] Studio title shows "Alibi (Staging)"
 
+## Step 10: Configure CORS (Required!)
+
+After setting up nginx, you **must** configure CORS in Sanity to allow requests from your custom domain.
+
+1. Go to [sanity.io/manage](https://sanity.io/manage)
+2. Select your project
+3. Go to **Settings** → **API** → **CORS origins**
+4. Click **Add CORS origin**
+5. Enter: `https://admin.alibistudios.co`
+6. Check **Allow credentials** (optional)
+7. Click **Save**
+
+**Without this step, you'll get CORS errors when accessing the Studio.**
+
+See `CORS_SETUP.md` for detailed instructions.
+
 ## Troubleshooting
 
 ### Container won't start

@@ -195,17 +195,18 @@ async function migrateDocumentType(type) {
     
     for (const doc of documents) {
       try {
-        // Create a clean document without system fields
-        const {_id, _rev, _createdAt, _updatedAt, ...docData} = doc
+        // Create a clean document without system fields (keep _id for createOrReplace)
+        const {_rev, _createdAt, _updatedAt, ...docData} = doc
         
-        // Create new document in staging
-        const result = await stagingClient.create({
+        // Create or replace by original _id so re-runs don't duplicate
+        await stagingClient.createOrReplace({
           ...docData,
           _type: type,
+          _id: doc._id,
         })
         
-        // Track the mapping: production _id -> staging _id
-        migratedIds.set(doc._id, result._id)
+        // Track the mapping: production _id -> same staging _id
+        migratedIds.set(doc._id, doc._id)
         
         const title = doc.title || doc.name || doc.slug?.current || doc._id
         console.log(`   ✓ Created: ${title}`)
@@ -381,17 +382,19 @@ async function migrateWithReferences(type, referenceFields = []) {
     
     for (const doc of documents) {
       try {
-        const {_id, _rev, _createdAt, _updatedAt, ...docData} = doc
+        const {_rev, _createdAt, _updatedAt, ...docData} = doc
         
         // Resolve ALL references recursively (assets and documents)
         const resolvedDoc = resolveAllReferences(docData)
         
-        const result = await stagingClient.create({
+        // Create or replace by original _id so re-runs don't duplicate
+        await stagingClient.createOrReplace({
           ...resolvedDoc,
           _type: type,
+          _id: doc._id,
         })
         
-        migratedIds.set(doc._id, result._id)
+        migratedIds.set(doc._id, doc._id)
         
         const title = doc.title || doc.name || doc.slug?.current || doc._id
         console.log(`   ✓ Created: ${title}`)
@@ -505,8 +508,9 @@ async function migrate() {
   await migrateWithReferences('directorWork', ['director'])
   await migrateWithReferences('film', ['category'])
   await migrateWithReferences('page', [])
+  await migrateWithReferences('menu', ['items']) // menu items can reference page
   await migrateWithReferences('seoMetadata', [])
-  
+
   console.log('\n✅ Migration complete!')
   console.log(`\n📊 Summary:`)
   console.log(`   Total documents migrated: ${migratedIds.size}`)

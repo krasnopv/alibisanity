@@ -25,7 +25,8 @@ import {
   Edit,
   Building2,
   Settings,
-  Search
+  Search,
+  Menu
 } from 'lucide-react'
 // import {duplicateActionV2} from './plugins/duplicateActionV2'
 
@@ -180,6 +181,11 @@ export default defineConfig({
                 S.list()
                   .title('Settings')
                   .items([
+                    S.listItem()
+                      .title('Menu')
+                      .id('menu')
+                      .icon(Menu)
+                      .child(S.documentList().id('menu-list').filter('_type == "menu"').apiVersion('2023-01-01')),
                     S.listItem()
                       .title('SEO')
                       .id('seo')

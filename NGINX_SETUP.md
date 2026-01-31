@@ -117,6 +117,24 @@ admin.alibistudios.co  A  your-server-ip
 - Referrer-Policy: strict-origin-when-cross-origin
 - Strict-Transport-Security: max-age=31536000 (HTTPS only)
 
+## CORS Configuration (Important!)
+
+After setting up nginx and accessing the Studio at `admin.alibistudios.co`, you may see CORS errors. This is because Sanity's API doesn't allow requests from custom domains by default.
+
+### Fix CORS Errors
+
+1. Go to [sanity.io/manage](https://sanity.io/manage)
+2. Select your project
+3. Go to **Settings** → **API** → **CORS origins**
+4. Click **Add CORS origin**
+5. Enter: `https://admin.alibistudios.co`
+6. Check **Allow credentials** (optional)
+7. Click **Save**
+
+Wait a few minutes for changes to propagate, then refresh the Studio.
+
+**See `CORS_SETUP.md` for detailed instructions.**
+
 ## Troubleshooting
 
 ### Nginx won't start

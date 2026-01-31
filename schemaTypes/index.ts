@@ -14,6 +14,7 @@ import subService from "./subService"
 import rebate from "./rebate"
 import studio from "./studio"
 import seoMetadata from "./seoMetadata"
+import menu, {menuItemType, menuSubItemType} from "./menu"
 
 export const schemaTypes = [
   film,
@@ -31,5 +32,8 @@ export const schemaTypes = [
   subService,
   rebate,
   studio,
-  seoMetadata
+  seoMetadata,
+  menuItemType,
+  menuSubItemType,
+  menu,
 ]
