@@ -17,10 +17,20 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables for staging build
-ENV SANITY_PROJECT_ID=srer6l4b
-ENV SANITY_DATASET=staging
+# Sanity Studio v4 requires SANITY_STUDIO_* prefix for build-time embedding
+ENV SANITY_STUDIO_PROJECT_ID=srer6l4b
+ENV SANITY_STUDIO_DATASET=staging
 ENV SANITY_STUDIO_TITLE="Alibi (Staging)"
 ENV NODE_ENV=production
+
+# Also set non-prefixed versions for backward compatibility
+ENV SANITY_PROJECT_ID=srer6l4b
+ENV SANITY_DATASET=staging
+
+# Verify environment variables are set
+RUN echo "Building with SANITY_STUDIO_PROJECT_ID=$SANITY_STUDIO_PROJECT_ID" && \
+    echo "Building with SANITY_STUDIO_DATASET=$SANITY_STUDIO_DATASET" && \
+    echo "Building with SANITY_STUDIO_TITLE=$SANITY_STUDIO_TITLE"
 
 # Build the Sanity Studio for staging
 RUN npm run build:staging

@@ -14,13 +14,15 @@ This guide explains how to set up nginx for the Sanity Studio staging environmen
 
 **For HTTP (before SSL):**
 ```bash
-scp nginx-admin-http.conf deployer@your-server:/tmp/admin-alibi-studio.conf
+scp -P 2219 nginx-admin-http.conf deployer@46.62.255.49:/tmp/admin-alibi-studio.conf
 ```
 
 **For HTTPS (after SSL):**
 ```bash
-scp nginx-admin-https.conf deployer@your-server:/tmp/admin-alibi-studio.conf
+scp -P 2219 nginx-admin-https.conf deployer@46.62.255.49:/tmp/admin-alibi-studio.conf
 ```
+
+**Note:** Use `-P 2219` (capital P) to specify the SSH port. Replace `46.62.255.49` with your server IP if different.
 
 ### Step 2: SSH to Server
 

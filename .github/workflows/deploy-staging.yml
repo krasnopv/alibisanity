@@ -48,8 +48,8 @@ jobs:
 
       - name: Build staging Studio
         env:
-          SANITY_PROJECT_ID: srer6l4b
-          SANITY_DATASET: staging
+          SANITY_STUDIO_PROJECT_ID: srer6l4b
+          SANITY_STUDIO_DATASET: staging
           SANITY_STUDIO_TITLE: "Alibi (Staging)"
         run: npm run build:staging
 
@@ -61,12 +61,36 @@ jobs:
         run: |
           docker save alibi-studio-staging:latest | gzip > alibi-studio-staging.tar.gz
 
+      - name: Debug connection info
+        run: |
+          echo "Host: ${{ secrets.STAGING_SERVER_HOST }}"
+          echo "User: ${{ secrets.STAGING_SERVER_USER }}"
+          echo "Port: ${{ secrets.STAGING_SERVER_PORT || '2219' }}"
+          echo "Key present: ${{ secrets.STAGING_SERVER_SSH_KEY != '' }}"
+
+      - name: Check deployment directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_SERVER_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          port: ${{ secrets.STAGING_SERVER_PORT || '2219' }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          script: |
+            if [ ! -d "/opt/alibi-studio" ]; then
+              echo "❌ Error: /opt/alibi-studio directory does not exist"
+              echo "Please create it manually on the server:"
+              echo "  sudo mkdir -p /opt/alibi-studio"
+              echo "  sudo chown deployer:deployer /opt/alibi-studio"
+              exit 1
+            fi
+            echo "✅ Directory /opt/alibi-studio exists"
+
       - name: Copy Docker image to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.STAGING_SERVER_HOST }}
           username: ${{ secrets.STAGING_SERVER_USER }}
-          port: ${{ secrets.STAGING_SERVER_PORT || 2219 }}
+          port: ${{ secrets.STAGING_SERVER_PORT || '2219' }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           source: "alibi-studio-staging.tar.gz"
           target: "/opt/alibi-studio/"
@@ -76,7 +100,7 @@ jobs:
         with:
           host: ${{ secrets.STAGING_SERVER_HOST }}
           username: ${{ secrets.STAGING_SERVER_USER }}
-          port: ${{ secrets.STAGING_SERVER_PORT || 2219 }}
+          port: ${{ secrets.STAGING_SERVER_PORT || '2219' }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           source: "docker-compose.staging.yml"
           target: "/opt/alibi-studio/"
@@ -86,7 +110,7 @@ jobs:
         with:
           host: ${{ secrets.STAGING_SERVER_HOST }}
           username: ${{ secrets.STAGING_SERVER_USER }}
-          port: ${{ secrets.STAGING_SERVER_PORT || 2219 }}
+          port: ${{ secrets.STAGING_SERVER_PORT || '2219' }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             cd /opt/alibi-studio

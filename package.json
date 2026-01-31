@@ -10,7 +10,7 @@
     "dev:production": "cross-env SANITY_DATASET=production SANITY_STUDIO_TITLE='Alibi (Production)' sanity dev",
     "start": "sanity start",
     "build": "sanity build",
-    "build:staging": "cross-env SANITY_DATASET=staging SANITY_STUDIO_TITLE='Alibi (Staging)' sanity build",
+    "build:staging": "cross-env SANITY_STUDIO_PROJECT_ID=srer6l4b SANITY_STUDIO_DATASET=staging SANITY_STUDIO_TITLE='Alibi (Staging)' sanity build",
     "build:production": "cross-env SANITY_DATASET=production SANITY_STUDIO_TITLE='Alibi (Production)' sanity build",
     "deploy": "sanity deploy",
     "deploy-graphql": "sanity graphql deploy",
