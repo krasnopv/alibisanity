@@ -117,3 +117,46 @@ The script migrates documents in this order to handle dependencies:
 **Error: "Permission denied"**
 - Make sure your API token has Editor permissions
 - Check you have access to the project
+
+---
+
+## Server Maintenance Scripts
+
+### docker-cleanup.sh
+
+Safely removes unused Docker resources (stopped containers, unused images, volumes, build cache) without affecting running containers.
+
+**Usage:**
+```bash
+# Copy to server
+scp -P 2219 scripts/docker-cleanup.sh deployer@server:/opt/alibi-studio/
+
+# Run manually
+/opt/alibi-studio/docker-cleanup.sh
+
+# Set up weekly cron job (Monday 4am)
+crontab -e
+# Add: 0 4 * * 1 /opt/alibi-studio/docker-cleanup.sh
+```
+
+**What it does:**
+- ✅ Removes stopped containers
+- ✅ Removes dangling/unused images (older than 7 days)
+- ✅ Removes unused volumes
+- ✅ Prunes build cache
+- ✅ Keeps running containers safe
+- ✅ Logs everything to `/opt/alibi-studio/docker-cleanup.log`
+
+See `scripts/DOCKER_CLEANUP_SETUP.md` for detailed setup instructions.
+
+### check-server-deployment.sh
+
+Diagnostic script to check server readiness for deployment (directory permissions, disk space, Docker status, etc.).
+
+**Usage:**
+```bash
+# Copy to server and run
+scp -P 2219 scripts/check-server-deployment.sh deployer@server:/tmp/
+ssh -p 2219 deployer@server
+bash /tmp/check-server-deployment.sh
+```

@@ -84,9 +84,31 @@ jobs:
               exit 1
             fi
             echo "✅ Directory /opt/alibi-studio exists"
+            
+            # Check permissions
+            if [ ! -w "/opt/alibi-studio" ]; then
+              echo "❌ Error: No write permission on /opt/alibi-studio"
+              echo "Fix with: sudo chown deployer:deployer /opt/alibi-studio"
+              exit 1
+            fi
+            echo "✅ Write permission confirmed"
+            
+            # Check disk space (need at least 1GB free)
+            available=$(df -BG /opt/alibi-studio | tail -1 | awk '{print $4}' | sed 's/G//')
+            echo "Available disk space: ${available}GB"
+            if [ "$available" -lt 1 ]; then
+              echo "⚠️  Warning: Less than 1GB free space"
+            fi
+
+      - name: Check file sizes before copy
+        run: |
+          echo "Docker image size:"
+          ls -lh alibi-studio-staging.tar.gz
+          echo "Docker compose file size:"
+          ls -lh docker-compose.staging.yml
 
       - name: Copy Docker image to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.STAGING_SERVER_HOST }}
           username: ${{ secrets.STAGING_SERVER_USER }}
@@ -94,9 +116,11 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           source: "alibi-studio-staging.tar.gz"
           target: "/opt/alibi-studio/"
+          strip_components: 0
+          debug: true
 
       - name: Copy docker-compose file to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.STAGING_SERVER_HOST }}
           username: ${{ secrets.STAGING_SERVER_USER }}
@@ -104,6 +128,33 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           source: "docker-compose.staging.yml"
           target: "/opt/alibi-studio/"
+          strip_components: 0
+          debug: true
+
+      - name: Verify files copied successfully
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_SERVER_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          port: ${{ secrets.STAGING_SERVER_PORT || '2219' }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          script: |
+            cd /opt/alibi-studio
+            echo "Files in /opt/alibi-studio:"
+            ls -lh
+            
+            if [ ! -f "alibi-studio-staging.tar.gz" ]; then
+              echo "❌ Error: Docker image file not found"
+              exit 1
+            fi
+            
+            if [ ! -f "docker-compose.staging.yml" ]; then
+              echo "❌ Error: docker-compose file not found"
+              exit 1
+            fi
+            
+            echo "✅ Both files copied successfully"
+            echo "Docker image size: $(du -h alibi-studio-staging.tar.gz | cut -f1)"
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
