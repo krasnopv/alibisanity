@@ -4,6 +4,67 @@
 
 Migrates data from production dataset to staging dataset, properly handling document references.
 
+## migrate-services-to-production.js
+
+Migrates **newly created** Services (and their dependencies) from staging dataset to production.
+
+- **Newly created** = Services that exist in staging but not in production (by `_id`).
+- Also migrates any **serviceTag** and **subService** documents referenced by those services that exist in staging but not in production.
+- Uses the same document `_id` in production so references (e.g. from projects) stay valid.
+
+### Usage
+
+1. **Get API Token:** (same as migrate-to-staging – Editor permissions)
+2. **Set environment:**
+   ```bash
+   export SANITY_API_TOKEN=your-token-here
+   ```
+3. **Run migration (new services only):**
+   ```bash
+   npm run migrate:services-to-production
+   ```
+4. **Optional – migrate all staging services (create or overwrite in production):**
+   ```bash
+   MIGRATE_ALL_SERVICES=1 npm run migrate:services-to-production
+   ```
+
+### What it does
+
+- Finds services in staging that are not in production.
+- Migrates referenced serviceTags and subServices that are missing in production.
+- Creates/overwrites services in production with the same `_id` (references preserved).
+- Does not migrate assets; Sanity assets are project-level and shared across datasets.
+
+## migrate-studios-to-production.js
+
+Migrates **newly created** Studios (and their dependencies) from staging to production.
+
+- **Newly created** = Studios that exist in staging but not in production (by `_id`).
+- Also migrates any **address** documents referenced by those studios that exist in staging but not in production.
+- Migrates referenced **image/file assets** (logo, featured image) from staging to production so references stay valid.
+
+### Usage
+
+1. **API token:** Same as above (`SANITY_API_TOKEN` with Editor permissions).
+2. **New studios only:**
+   ```bash
+   npm run migrate:studios-to-production
+   ```
+3. **All staging studios (create or overwrite):**
+   ```bash
+   MIGRATE_ALL_STUDIOS=1 npm run migrate:studios-to-production
+   ```
+
+### What it does
+
+- Finds studios in staging that are not in production.
+- Migrates referenced assets (images/files), then addresses, then studios.
+- Uses the same `_id` in production so references stay valid.
+
+---
+
+## migrate-to-staging.js (details)
+
 ### Usage
 
 1. **Get API Token:**

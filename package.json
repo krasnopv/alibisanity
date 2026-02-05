@@ -17,7 +17,9 @@
     "docker:build:staging": "docker build -f Dockerfile.staging -t alibi-studio-staging .",
     "docker:up:staging": "docker-compose -f docker-compose.staging.yml up -d",
     "docker:down:staging": "docker-compose -f docker-compose.staging.yml down",
-    "migrate:to-staging": "node scripts/migrate-to-staging.js"
+    "migrate:to-staging": "node scripts/migrate-to-staging.js",
+    "migrate:services-to-production": "node scripts/migrate-services-to-production.js",
+    "migrate:studios-to-production": "node scripts/migrate-studios-to-production.js"
   },
   "keywords": [
     "sanity"

@@ -382,6 +382,7 @@ export default defineType({
       name: 'projects',
       title: 'Related Projects',
       type: 'array',
+      readOnly: false,
       of: [
         {
           type: 'reference',
@@ -396,6 +397,7 @@ export default defineType({
       name: 'subServices',
       title: 'Related Sub-Services',
       type: 'array',
+      readOnly: false,
       of: [
         {
           type: 'reference',

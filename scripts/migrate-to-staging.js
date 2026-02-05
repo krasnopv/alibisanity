@@ -43,6 +43,39 @@ const stagingClient = createClient({
 // Track migrated documents to resolve references
 const migratedIds = new Map()
 
+/** Generate a simple _key for array items that lack one */
+function generateKey() {
+  return Math.random().toString(36).slice(2, 11)
+}
+
+/**
+ * Normalize reference objects in arrays to only _key, _type, _ref so Studio
+ * treats them as editable (extra props from API can make fields read-only).
+ */
+function normalizeReferenceArrays(obj) {
+  if (obj === null || obj === undefined) return obj
+  if (Array.isArray(obj)) {
+    return obj.map((item) => {
+      if (item && item._type === 'reference' && item._ref) {
+        return {
+          _key: item._key || generateKey(),
+          _type: 'reference',
+          _ref: item._ref,
+        }
+      }
+      return normalizeReferenceArrays(item)
+    })
+  }
+  if (typeof obj === 'object') {
+    const out = {}
+    for (const [key, value] of Object.entries(obj)) {
+      out[key] = normalizeReferenceArrays(value)
+    }
+    return out
+  }
+  return obj
+}
+
 /**
  * Migrate assets in batches using transactions (much faster)
  */
@@ -287,13 +320,13 @@ function resolveAllReferences(obj) {
     }
     // If not found:
     // - Assets (image-*, file-*) are project-level, keep reference
-    // - Document references that don't exist: return null to remove them
+    // - Document references: keep ref as-is (we use same _id in staging, so ref will work
+    //   once the target document is migrated later; removing would drop Related Projects/Sub-Services)
     if (obj._ref.startsWith('image-') || obj._ref.startsWith('file-')) {
-      // Asset reference - keep it (assets are project-level)
       return obj
     }
-    // Document reference that doesn't exist - remove it
-    return null
+    // Keep document reference (same _id in staging; target may be migrated later in this run)
+    return obj
   }
   
   // Handle image objects with asset references
@@ -385,8 +418,9 @@ async function migrateWithReferences(type, referenceFields = []) {
         const {_rev, _createdAt, _updatedAt, ...docData} = doc
         
         // Resolve ALL references recursively (assets and documents)
-        const resolvedDoc = resolveAllReferences(docData)
-        
+        let resolvedDoc = resolveAllReferences(docData)
+        // Normalize reference arrays so Studio treats them as editable (not read-only)
+        resolvedDoc = normalizeReferenceArrays(resolvedDoc)
         // Create or replace by original _id so re-runs don't duplicate
         await stagingClient.createOrReplace({
           ...resolvedDoc,
