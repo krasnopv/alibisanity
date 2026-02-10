@@ -191,6 +191,17 @@ export default defineConfig({
                       .id('seo')
                       .icon(Search)
                       .child(S.documentList().id('seo-list').filter('_type == "seoMetadata"').apiVersion('2023-01-01')),
+                    S.listItem()
+                      .title('Options')
+                      .id('options')
+                      .icon(Settings)
+                      .child(
+                        S.documentList()
+                          .id('options-list')
+                          .filter('_type == "option"')
+                          .apiVersion('2023-01-01')
+                          .defaultOrdering([{field: '_createdAt', direction: 'desc'}])
+                      ),
                   ])
               ),
             

@@ -15,6 +15,7 @@ import rebate from "./rebate"
 import studio from "./studio"
 import seoMetadata from "./seoMetadata"
 import menu, {menuItemType, menuSubItemType} from "./menu"
+import option from "./option"
 
 export const schemaTypes = [
   film,
@@ -36,4 +37,5 @@ export const schemaTypes = [
   menuItemType,
   menuSubItemType,
   menu,
+  option,
 ]
