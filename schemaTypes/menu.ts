@@ -98,10 +98,23 @@ export const menuSubItemType = defineType({
       to: [{type: 'page'}],
       hidden: ({parent}) => parent?.linkType !== 'page',
     }),
+    defineField({
+      name: 'parentService',
+      title: 'Parent Service',
+      type: 'reference',
+      to: [{type: 'service'}],
+      description: 'Optional. Which service this sub-item belongs to (e.g. for grouping or site navigation).',
+    }),
   ],
   preview: {
-    select: {label: 'label'},
-    prepare: ({label}) => ({title: label || 'Sub-item'}),
+    select: {
+      label: 'label',
+      parentTitle: 'parentService.title',
+    },
+    prepare: ({label, parentTitle}) => ({
+      title: label || 'Sub-item',
+      subtitle: parentTitle ? `Parent service: ${parentTitle}` : undefined,
+    }),
   },
 })
 
