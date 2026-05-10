@@ -73,6 +73,7 @@ export const menuSubItemType = defineType({
           {title: 'Service', value: 'service'},
           {title: 'Custom URL', value: 'custom'},
           {title: 'Page', value: 'page'},
+          {title: 'Expander (nested sub-items)', value: 'expander'},
         ],
         layout: 'radio',
       },
@@ -99,6 +100,22 @@ export const menuSubItemType = defineType({
       hidden: ({parent}) => parent?.linkType !== 'page',
     }),
     defineField({
+      name: 'subItems',
+      title: 'Nested sub-items',
+      type: 'array',
+      description: 'Sub-links shown under this label when Link Type is Expander.',
+      of: [{type: 'menuSubItem'}],
+      hidden: ({parent}) => parent?.linkType !== 'expander',
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as {linkType?: string} | undefined
+          if (parent?.linkType === 'expander' && (!value || value.length === 0)) {
+            return 'Add at least one nested sub-item, or switch Link Type to a direct link.'
+          }
+          return true
+        }).warning(),
+    }),
+    defineField({
       name: 'parentService',
       title: 'Parent Service',
       type: 'reference',
@@ -109,11 +126,17 @@ export const menuSubItemType = defineType({
   preview: {
     select: {
       label: 'label',
+      linkType: 'linkType',
       parentTitle: 'parentService.title',
     },
-    prepare: ({label, parentTitle}) => ({
+    prepare: ({label, linkType, parentTitle}) => ({
       title: label || 'Sub-item',
-      subtitle: parentTitle ? `Parent service: ${parentTitle}` : undefined,
+      subtitle:
+        linkType === 'expander'
+          ? 'Nested group'
+          : parentTitle
+            ? `Parent service: ${parentTitle}`
+            : undefined,
     }),
   },
 })
