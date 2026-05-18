@@ -176,18 +176,37 @@ export default defineType({
       validation: (Rule) => Rule.required()
     }),
     defineField({
+      name: 'show',
+      title: 'Show',
+      type: 'boolean',
+      description: 'Show this team member on the frontend. Existing members without this field remain visible.',
+      initialValue: true,
+      options: {
+        layout: 'switch',
+      },
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',
-      description: 'Order for displaying team members (lower numbers appear first)'
-    })
+      description: 'Order for displaying team members (lower numbers appear first)',
+      hidden: ({document}) => document?.show === false,
+    }),
   ],
   preview: {
     select: {
       title: 'fullName',
-      subtitle: 'role',
-      media: 'image'
-    }
+      role: 'role',
+      show: 'show',
+      media: 'image',
+    },
+    prepare({title, role, show, media}) {
+      return {
+        title: show === false ? `${title} · Hidden` : title,
+        subtitle: role,
+        media,
+      }
+    },
   },
   orderings: [
     {
