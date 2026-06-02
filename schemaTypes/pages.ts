@@ -344,13 +344,14 @@ export default defineType({
                   type: 'string',
                   options: {
                     list: [
+                      { title: 'None', value: 'none' },
                       { title: 'Internal Page', value: 'internal' },
                       { title: 'External URL', value: 'external' }
                     ],
                     layout: 'radio'
                   },
                   validation: (Rule) => Rule.required(),
-                  initialValue: 'internal'
+                  initialValue: 'none'
                 },
                 {
                   name: 'internalPage',
@@ -380,19 +381,20 @@ export default defineType({
                   })
                 }
               ],
-              description: 'Link to an internal page or external URL'
+              description: 'Link to an internal page, external URL, or none'
             }
           ],
           preview: {
-            select: { title: 'title', url: 'url' },
-            prepare({title, url}) {
-              return { 
-                title: 'Text Section', 
+            select: { title: 'title', urlType: 'url.type' },
+            prepare({title, urlType}) {
+              const hasLink = urlType === 'internal' || urlType === 'external'
+              return {
+                title: 'Text Section',
                 subtitle: title || 'Untitled',
-                media: url ? 'URL' : undefined
+                media: hasLink ? 'URL' : undefined,
               }
-            }
-          }
+            },
+          },
         },
         // Films section (toggle with title/subtitle)
         {
