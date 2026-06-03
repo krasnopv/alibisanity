@@ -334,6 +334,12 @@ export default defineType({
               ]
             },
             {
+              name: 'class',
+              title: 'Class',
+              type: 'string',
+              description: 'Optional CSS class for copy styling, e.g. ".services-list"',
+            },
+            {
               name: 'url',
               title: 'URL',
               type: 'object',
