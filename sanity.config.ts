@@ -26,7 +26,8 @@ import {
   Building2,
   Settings,
   Search,
-  Menu
+  Menu,
+  Images,
 } from 'lucide-react'
 // import {duplicateActionV2} from './plugins/duplicateActionV2'
 
@@ -56,6 +57,13 @@ export default defineConfig({
             .icon(FileText)
             .id('pages')
             .child(S.documentList().id('pages-list').filter('_type == "page"').apiVersion('2023-01-01')),
+
+            // Carousels Group
+            S.listItem()
+              .title('Carousels')
+              .icon(Images)
+              .id('carousels')
+              .child(S.documentList().id('carousels-list').filter('_type == "carousel"').apiVersion('2023-01-01')),
 
             // Films Group
             S.listItem()

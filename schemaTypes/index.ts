@@ -16,6 +16,7 @@ import studio from "./studio"
 import seoMetadata from "./seoMetadata"
 import menu, {menuItemType, menuSubItemType} from "./menu"
 import option from "./option"
+import carousel from "./carousel"
 
 export const schemaTypes = [
   film,
@@ -38,4 +39,5 @@ export const schemaTypes = [
   menuSubItemType,
   menu,
   option,
+  carousel,
 ]

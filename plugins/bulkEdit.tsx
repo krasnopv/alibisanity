@@ -38,6 +38,7 @@ function BulkEditTool() {
     {value: 'teamMember', label: 'Team Members'},
     {value: 'award', label: 'Awards'},
     {value: 'page', label: 'Pages'},
+    {value: 'carousel', label: 'Carousels'},
     {value: 'studio', label: 'Studios'},
   ]
 

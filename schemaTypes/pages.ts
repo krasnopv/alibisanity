@@ -402,6 +402,51 @@ export default defineType({
             },
           },
         },
+        // Carousel section (reference to carousel document)
+        {
+          type: 'object',
+          name: 'carouselSection',
+          title: 'Carousel',
+          fields: [
+            {
+              name: 'sectionId',
+              title: 'Section ID',
+              type: 'string',
+              description: 'Unique identifier for this section (used for navigation and styling)',
+            },
+            {
+              name: 'hide',
+              title: 'Hide',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Hide this section from display',
+            },
+            {
+              name: 'carousel',
+              title: 'Carousel',
+              type: 'reference',
+              to: [{type: 'carousel'}],
+              validation: (Rule) => Rule.required(),
+              description: 'Select an existing carousel to display on this page',
+            },
+          ],
+          preview: {
+            select: {
+              carouselTitle: 'carousel.title',
+              slides: 'carousel.slides',
+            },
+            prepare({carouselTitle, slides}) {
+              const count = Array.isArray(slides) ? slides.length : 0
+              const slideLabel = count ? ` (${count} slide${count === 1 ? '' : 's'})` : ''
+              return {
+                title: 'Carousel',
+                subtitle: carouselTitle
+                  ? `${carouselTitle}${slideLabel}`
+                  : 'No carousel selected',
+              }
+            },
+          },
+        },
         // Films section (toggle with title/subtitle)
         {
           type: 'object',
