@@ -37,17 +37,25 @@ export default defineType({
                 layout: 'checkbox',
               },
               description:
-                'Use a placeholder instead of an image. A caption is required when this is enabled.',
+                'Use a placeholder instead of an image. A caption is required only when no image is uploaded.',
             }),
             defineField({
               name: 'caption',
               title: 'Caption',
               type: 'string',
+              description: 'Optional when an image is uploaded',
               validation: (Rule) =>
                 Rule.custom((value, context) => {
-                  const parent = context.parent as {usePlaceholder?: boolean}
+                  const parent = context.parent as {
+                    usePlaceholder?: boolean
+                    image?: {asset?: {_ref?: string}}
+                  }
+                  const hasImage = Boolean(parent?.image?.asset?._ref)
+                  if (hasImage) {
+                    return true
+                  }
                   if (parent?.usePlaceholder && !value?.trim()) {
-                    return 'Caption is required when using a placeholder'
+                    return 'Caption is required when using a placeholder without an image'
                   }
                   return true
                 }),
